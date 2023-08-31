@@ -68,7 +68,8 @@ try:
             else:
                 objects[command["objId"]] = eval(''.join((command["init"], '(*args, **command["kwargs"])')))
         elif "delObjId" in command:
-            del objects[command["delObjId"]]
+            if command["delObjId"] in objects:
+                del objects[command["delObjId"]]
 
 finally:
     print("Closing socket")
