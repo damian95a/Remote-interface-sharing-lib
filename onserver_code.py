@@ -24,6 +24,9 @@ def return_string():
 def return_none():
     return None
 
+def divide_numbers(a,b):
+    return a/b
+
 class WithoutInit:
     def wait(self, sleep_time):
         import time
@@ -53,4 +56,5 @@ functions = [no_params_fun,\
             return_string,\
             return_none,\
             NoParams.return_five,\
-            WithoutInit.wait]
+            WithoutInit.wait,
+            divide_numbers]

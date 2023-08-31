@@ -43,35 +43,31 @@ try:
 
             if "objId" in command:
                 args.insert(0, objects[command["objId"]])
-            functions = eval(f'{modules[command["mod"]]}.functions')
-                
-            if "kwargs" not in command:
-                returned_value = functions[command["idx"]](*args)
-            else:
-                returned_value = functions[command["idx"]](*args, **command["kwargs"])
 
-            if returned_value is not None:
-                connection, _ = sock.accept()
-                try:
-                    call_back = pickle.dumps(returned_value)
-                    connection.sendall(call_back)
-                finally:
-                    print("Closing connection", file=sys.stderr)
-                    connection.close()
-            else:
-                sock.settimeout(0.05)
-                try:
-                    connection, _ = sock.accept()
-                except socket.timeout: # TimeoutError: # dla pythona 3.10
-                    pass
+            functions = eval(f'{modules[command["mod"]]}.functions')
+            exception = None
+            returned_value = None
+            try:
+                if "kwargs" not in command:
+                    returned_value = functions[command["idx"]](*args)
                 else:
-                    try:
-                        connection.sendall(NonePickledObj)
-                    finally:
-                        print("Closing connection", file=sys.stderr)
-                        connection.close()
-                finally:
-                    sock.settimeout(None)
+                    returned_value = functions[command["idx"]](*args, **command["kwargs"])
+            except Exception as e:
+                exception = e
+
+            feedback = {}
+            if exception is not None:
+                feedback["except"] = exception
+            if returned_value is not None:
+                feedback["return"] = returned_value
+
+            connection, _ = sock.accept()
+            try:
+                call_back = pickle.dumps(feedback)
+                connection.sendall(call_back)
+            finally:
+                print("Closing connection", file=sys.stderr)
+                connection.close()
         elif "init" in command and "objId" in command and "mod" in command:
             if not inModules(command["mod"]):
                 print("WRONG MODULE NAME!")

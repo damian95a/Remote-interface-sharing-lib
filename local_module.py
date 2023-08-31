@@ -15,22 +15,36 @@ def _send_function_call(fun_description):
     finally:
         sock.close()
 
-def _get_return_value(buff_size=10):
+def _get_function_callback(buff_size=10):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(server_addr)
     try:
-        return_value = b''
-        while call_back := sock.recv(10):
-            return_value += call_back
+        callback = b''
+        while cb := sock.recv(buff_size):
+            callback += cb
     finally:
         sock.close()
     
-    return pickle.loads(return_value)
+    return pickle.loads(callback)
+
+def _return_value(callback):
+    if "return" in callback:
+        return callback["return"]
+
+def _raise_exception_forward(callback):
+    if "except" in callback:
+        raise callback["except"]
+
+####
+
 
 def fun(a):
     fun={"mod": 1, "idx": 0, "args": [a]}
     _send_function_call(fun)
-    return _get_return_value()
+    
+    callback = _get_function_callback()
+    _raise_exception_forward(callback)
+    return _return_value(callback)
 
 
 # import remotely
