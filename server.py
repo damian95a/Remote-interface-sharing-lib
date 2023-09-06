@@ -3,6 +3,12 @@ import socket
 import sys
 import pickle
 
+modules = ("onserver_code",\
+           "module")
+
+def inModules(idx):
+    return idx >= 0 and idx < len(modules)
+
 NonePickledObj = pickle.dumps(None)
 objects = {}
 
@@ -15,7 +21,6 @@ try:
 
     sock.listen(2)
 
-    import onserver_code
 
     while True:
         print("Waiting for a command", file=sys.stderr)
@@ -31,14 +36,19 @@ try:
 
         command = pickle.loads(command)
         args = command["args"] if "args" in command else []
-        if "idx" in command:
+        if "idx" in command and "mod" in command:
+            if not inModules(command["mod"]):
+                print("WRONG MODULE NAME!")
+                continue
+
             if "objId" in command:
                 args.insert(0, objects[command["objId"]])
+            functions = eval(f'{modules[command["mod"]]}.functions')
                 
             if "kwargs" not in command:
-                returned_value = onserver_code.functions[command["idx"]](*args)
+                returned_value = functions[command["idx"]](*args)
             else:
-                returned_value = onserver_code.functions[command["idx"]](*args, **command["kwargs"])
+                returned_value = functions[command["idx"]](*args, **command["kwargs"])
 
             if returned_value is not None:
                 connection, _ = sock.accept()
@@ -62,14 +72,23 @@ try:
                         connection.close()
                 finally:
                     sock.settimeout(None)
-        elif "init" in command and "objId" in command:
+        elif "init" in command and "objId" in command and "mod" in command:
+            if not inModules(command["mod"]):
+                print("WRONG MODULE NAME!")
+                continue
+            module = modules[command["mod"]]
             if "kwargs" not in command:
-                objects[command["objId"]] = eval(''.join((command["init"], '(*args)')))
+                objects[command["objId"]] = eval(''.join((module, '.', command["init"], '(*args)')))
             else:
-                objects[command["objId"]] = eval(''.join((command["init"], '(*args, **command["kwargs"])')))
+                objects[command["objId"]] = eval(''.join((module, '.', command["init"], '(*args, **command["kwargs"])')))
         elif "delObjId" in command:
             if command["delObjId"] in objects:
                 del objects[command["delObjId"]]
+        elif "import" in command:
+            if not inModules(command["import"]):
+                print("WRONG MODULE NAME!")
+                continue
+            exec(f"import {modules[command['import']]}")
 
 finally:
     print("Closing socket")
