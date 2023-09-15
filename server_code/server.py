@@ -3,7 +3,7 @@ import socket
 import sys
 import pickle
 
-modules = ("onserver_code",\
+modules = ("examples",\
            "module")
 
 def inModules(idx):
