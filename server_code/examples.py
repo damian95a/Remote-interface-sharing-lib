@@ -1,16 +1,14 @@
 def no_params_fun():
-    print("Test")
+    return "Test"
 
 def fun_with_params(a,b,c):
-    print(f"Test {a}, {b}, {c}")
+    return f"Test {a}, {b}, {c}"
 
 def varriable_num_of_params(single, *poz, **name):
-    print(single, end=' ')
-    for p in poz:
-        print(f"{p}", end=" ")
-    print("")
-    for n,v in name.items():
-        print(f"{n}: {v}")
+    str_p  = ' '.join(map(lambda p: str(p), poz))
+    str_kw = ' '.join(map(lambda it: f'{it[0]}={it[1]}', name.items()))
+
+    return ' '.join((single, str_p, str_kw))
 
 def return_multiple_values(a,b):
     return a+b, a*b

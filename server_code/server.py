@@ -14,6 +14,7 @@ objects = {}
 
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     server_addr = ('localhost', 10_000)
     print(f'starting up on {server_addr[0]}, port {server_addr[1]}', file=sys.stderr)
@@ -35,6 +36,16 @@ try:
             connection.close()
 
         command = pickle.loads(command)
+        if "get_obj_num" == command:
+            num_of_objs = len(objects)
+            connection, _ = sock.accept()
+            try:
+                num_of_objs = pickle.dumps(num_of_objs)
+                connection.sendall(num_of_objs)
+            finally:
+                connection.close()
+            continue
+
         args = command["args"] if "args" in command else []
         if "idx" in command and "mod" in command:
             if not inModules(command["mod"]):

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+SCRIPT=$(readlink -f $0)
+SCRIPTPATH=`dirname $SCRIPT`
+
+python3 ${SCRIPTPATH}/server_code/server.py &> /dev/null &
+SERVER_PID=$!
+
+cd ${SCRIPTPATH}/local_code
+pytest
+kill $SERVER_PID
