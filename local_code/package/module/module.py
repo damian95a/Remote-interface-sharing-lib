@@ -3,9 +3,8 @@ import socket
 import sys
 import network_control as nc
 
-def fun(a):
-    fun={"mod": 1, "idx": 0}
-    fun["args"] = [a]
+def fun():
+    fun={"mod": 2, "idx": 0}
     nc.send_command(fun)
 
     callback = nc.get_function_callback()
@@ -14,6 +13,6 @@ def fun(a):
 
 # import remotely
 def _import():
-    nc.send_command({"import": 1}) # import module
+    nc.send_command({"import": 2}) # import module
 
 _import()

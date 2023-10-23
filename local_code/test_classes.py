@@ -50,3 +50,15 @@ def test_override_instance_of_WithoutInit():
     del o
     n = nc.get_num_of_objects()
     assert n == 0
+
+def test_class_method():
+    obj = NoParams()
+
+    value = obj.return_five()
+    assert value == 5
+
+def test_deriverred_method():
+    obj = Inherited()
+    
+    value = obj.return_five()
+    assert value == 5

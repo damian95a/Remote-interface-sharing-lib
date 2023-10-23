@@ -22,8 +22,6 @@ def return_string():
 def return_none():
     return None
 
-def divide_numbers(a,b):
-    return a/b
 
 class WithoutInit:
     def wait(self, sleep_time):
@@ -34,7 +32,7 @@ class WithoutInit:
 class NoParams:
     def __init__(self):
         print("initialization")
-    
+
     def __del__(self):
         print("deleting")
     
@@ -46,13 +44,19 @@ class Params:
     def __init__(self, a):
         self.a = a
 
-functions = [no_params_fun,\
-            fun_with_params,\
-            varriable_num_of_params,\
-            return_multiple_values,\
-            return_single_value,\
-            return_string,\
-            return_none,\
-            NoParams.return_five,\
-            WithoutInit.wait,
-            divide_numbers]
+def divide_numbers(a,b):
+    return a/b
+
+class Inherited(NoParams):
+    pass
+
+# functions = [no_params_fun,\
+#             fun_with_params,\
+#             varriable_num_of_params,\
+#             return_multiple_values,\
+#             return_single_value,\
+#             return_string,\
+#             return_none,\
+#             NoParams.return_five,\
+#             WithoutInit.wait,
+#             divide_numbers]

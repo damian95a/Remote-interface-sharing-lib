@@ -3,8 +3,7 @@ import socket
 import sys
 import pickle
 
-modules = ("examples",\
-           "module")
+from modules_list import modules
 
 def inModules(idx):
     return idx >= 0 and idx < len(modules)
@@ -55,7 +54,7 @@ try:
             if "objId" in command:
                 args.insert(0, objects[command["objId"]])
 
-            functions = eval(f'{modules[command["mod"]]}.functions')
+            functions = eval(f'{modules[command["mod"]]}_func.functions')
             exception = None
             returned_value = None
             try:
@@ -96,6 +95,7 @@ try:
                 print("WRONG MODULE NAME!")
                 continue
             exec(f"import {modules[command['import']]}")
+            exec(f"import {modules[command['import']]}_func")
 
 finally:
     print("Closing socket")

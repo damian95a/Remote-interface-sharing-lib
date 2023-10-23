@@ -1,0 +1,23 @@
+#!/bin/bash
+
+./generator/parser.py
+
+# move *_func.py with parent directories
+cd generated_files/
+find */ -name '*_func.py' -exec cp --parents {} ../server_code/ \; -exec rm {} \;
+cd -
+
+# move files witout parent direcotry
+mv generated_files/modules_list.py server_code/
+mv generated_files/*_func.py server_code/
+mv generated_files/*.py local_code/
+
+# move fiels with parent directories
+cd generated_files
+tar cf move.tar *
+cd ../local_code
+tar xf ../generated_files/move.tar
+cd ..
+rm generated_files/move.tar
+
+rm -r generated_files
