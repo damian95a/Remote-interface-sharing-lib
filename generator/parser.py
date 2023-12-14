@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import sys
 from enum import Enum
 from function_list import FunctionListGenerator
 from server_code_search import *
@@ -13,8 +14,11 @@ class FunctionType(Enum):
     DelOperator = 3
     NoneFunction = 0
 
+if len(sys.argv) < 2:
+    sys.exit()
+
 dir = "generated_files"
-search_dir = "server_code"
+search_dir = sys.argv[1] if sys.argv[1][-1] != '/' else sys.argv[1][:-1]
 module_name_start = len(search_dir)+1
 exclude_list = ('modules_list.py', 'server.py')
 
@@ -37,7 +41,7 @@ for file, module_name in zip(files, modules):
     function_list = FunctionListGenerator(dir, module_name, file)
     gen = CodeGenerator(dir, file, module_index)
 
-    with open(f"server_code/{file}", 'r') as server_code:
+    with open(f"{search_dir}/{file}", 'r') as server_code:
         gen.generate_imports()
 
         fun_indent = 0

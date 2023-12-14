@@ -1,23 +1,39 @@
 #!/bin/bash
 
-./generator/parser.py
+if [ "$#" -lt "2" ]; then
+    echo "Too few arguments"
+    echo "Provide source path as first argument and destination path as second argument"
+    exit
+elif [ "$#" -gt "2" ]; then
+    echo "Too many arguments"
+    exit
+fi
+
+SOURCE_DIR="$1"
+DESTINATION_DIR="$2"
+FLAG_PACKAGES_PRESENT=True
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+
+./generator/parser.py "$SOURCE_DIR"
 
 # move *_func.py with parent directories
 cd generated_files/
-find */ -name '*_func.py' -exec cp --parents {} ../server_code/ \; -exec rm {} \;
-cd -
+find */ -name '*_func.py' -exec cp --parents {} ../${SOURCE_DIR} \; -exec rm {} \; 2> /dev/null || FLAG_PACKAGES_PRESENT="$false"
+cd ..
 
 # move files witout parent direcotry
-mv generated_files/modules_list.py server_code/
-mv generated_files/*_func.py server_code/
-mv generated_files/*.py local_code/
+mv generated_files/modules_list.py ${SOURCE_DIR}
+mv generated_files/*_func.py ${SOURCE_DIR}
+mv generated_files/*.py ${DESTINATION_DIR}
 
 # move fiels with parent directories
-cd generated_files
-tar cf move.tar *
-cd ../local_code
-tar xf ../generated_files/move.tar
-cd ..
-rm generated_files/move.tar
+if [ $FLAG_PACKAGES_PRESENT ]; then
+    cd generated_files
+    tar cf move.tar *
+    cd ../${DESTINATION_DIR}
+    tar xf ${SCRIPT_DIR}/generated_files/move.tar
+    cd ${SCRIPT_DIR}
+    rm generated_files/move.tar
+fi
 
 rm -r generated_files
