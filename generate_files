@@ -37,3 +37,5 @@ if [ $FLAG_PACKAGES_PRESENT ]; then
 fi
 
 rm -r generated_files
+cp generator/networking/server.py ${SOURCE_DIR}
+cp generator/networking/network_control.py ${DESTINATION_DIR}
