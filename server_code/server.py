@@ -8,6 +8,15 @@ from modules_list import modules
 def inModules(idx):
     return idx >= 0 and idx < len(modules)
 
+def send_response(feedback):
+    connection, _ = sock.accept()
+    try:
+        call_back = pickle.dumps(feedback)
+        connection.sendall(call_back)
+    finally:
+        print("Closing connection", file=sys.stderr)
+        connection.close()
+
 NonePickledObj = pickle.dumps(None)
 objects = {}
 
@@ -15,7 +24,11 @@ try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    server_addr = ('localhost', 10_000)
+    if len(sys.argv) == 1:
+        server_addr = ('localhost', 10_000)
+    else:
+        server_addr = (sys.argv[1], 10_000)
+
     print(f'starting up on {server_addr[0]}, port {server_addr[1]}', file=sys.stderr)
     sock.bind(server_addr)
 
@@ -37,12 +50,8 @@ try:
         command = pickle.loads(command)
         if "get_obj_num" == command:
             num_of_objs = len(objects)
-            connection, _ = sock.accept()
-            try:
-                num_of_objs = pickle.dumps(num_of_objs)
-                connection.sendall(num_of_objs)
-            finally:
-                connection.close()
+            send_response(num_of_objs)
+                
             continue
 
         args = command["args"] if "args" in command else []
@@ -52,6 +61,11 @@ try:
                 continue
 
             if "objId" in command:
+                if command["objId"] not in objects:
+                    exception = {"except": ValueError("Object 'self' does not exist")}
+                    send_response(exception)
+                    continue
+                
                 args.insert(0, objects[command["objId"]])
 
             functions = eval(f'{modules[command["mod"]]}_func.functions')
@@ -71,22 +85,22 @@ try:
             if returned_value is not None:
                 feedback["return"] = returned_value
 
-            connection, _ = sock.accept()
-            try:
-                call_back = pickle.dumps(feedback)
-                connection.sendall(call_back)
-            finally:
-                print("Closing connection", file=sys.stderr)
-                connection.close()
+            send_response(feedback)
         elif "init" in command and "objId" in command and "mod" in command:
             if not inModules(command["mod"]):
                 print("WRONG MODULE NAME!")
                 continue
             module = modules[command["mod"]]
-            if "kwargs" not in command:
-                objects[command["objId"]] = eval(''.join((module, '.', command["init"], '(*args)')))
-            else:
-                objects[command["objId"]] = eval(''.join((module, '.', command["init"], '(*args, **command["kwargs"])')))
+            feedback = {}
+            try:
+                if "kwargs" not in command:
+                    objects[command["objId"]] = eval(''.join((module, '.', command["init"], '(*args)')))
+                else:
+                    objects[command["objId"]] = eval(''.join((module, '.', command["init"], '(*args, **command["kwargs"])')))
+            except Exception as e:
+                feedback["except"] = e
+            
+            send_response(feedback)
         elif "delObjId" in command:
             if command["delObjId"] in objects:
                 del objects[command["delObjId"]]
@@ -98,6 +112,6 @@ try:
             exec(f"import {modules[command['import']]}_func")
 
 finally:
-    print("Closing socket")
+    print("Closing socket", file=sys.stderr)
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
