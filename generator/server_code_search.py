@@ -14,6 +14,9 @@ def find_class_def(code_line):
     pos = code_line.find('class')
 
     if pos != -1:
+        if any(x not in string.whitespace for x in code_line[0:pos]):
+            return -1, None
+
         class_name = code_line.split()[1]
         name_end = class_name.find('(')
         if name_end == -1:

@@ -1,4 +1,5 @@
 import os
+from copy import copy
 
 class CodeGenerator:
     def __init__(self, dir, file, module_id):
@@ -22,6 +23,16 @@ class CodeGenerator:
         with open(f"{self.direcotry}/{self.file}", 'a') as gen_code:
             gen_code.writelines(code)
     
+    def __clear_default_params(self, params_str):
+        ret_string = copy(params_str)
+        while (b := ret_string.find('=')) != -1:
+            e = ret_string[b:].find(",")
+
+            if e != -1:
+                ret_string = ret_string[:b] + ret_string[e+1:]
+            else:
+                ret_string = ret_string[:b]
+        return ret_string
 
     def generate_fun_header_data(self, gen_file, code_line, fun_index, tabs, is_class_method):
         name_start = code_line.find('def') + 4
@@ -43,9 +54,9 @@ class CodeGenerator:
         if is_class_method:
             gen_file.write(f'{tabs}fun["objId"] = id(self)\n')
         if kw_arg == -1 and arg_start != arg_end:
-            gen_file.write(f'{tabs}fun["args"] = [{code_line[arg_start:arg_end].strip()}]\n')
+            gen_file.write(f'{tabs}fun["args"] = [{self.__clear_default_params(code_line[arg_start:arg_end].strip())}]\n')
         elif arg_start != arg_end:
-            gen_file.write(f'{tabs}fun["args"] = [{code_line[arg_start:kw_arg-1]}]\n')
+            gen_file.write(f'{tabs}fun["args"] = [{self.__clear_default_params(code_line[arg_start:kw_arg-1])}]\n')
             gen_file.write(f'{tabs}fun["kwargs"] = {code_line[kw_arg+2:arg_end]}\n')
 
         return function_name
@@ -54,6 +65,9 @@ class CodeGenerator:
         self.generate_fun_header_data(gen_file, code_line, None, tabs, True)
         gen_file.write(f'{tabs}fun["init"] = "{class_name}"\n')
         gen_file.write(f'{tabs}nc.send_command(fun)\n')
+        gen_file.write('\n')
+        gen_file.write(f"{tabs}callback = nc.get_function_callback()\n")
+        gen_file.write(f"{tabs}nc.raise_exception_forward(callback)\n")
         
     def implement_default_init(self, class_name, tabs):
         init_def = f'{tabs}def __init__(self):'

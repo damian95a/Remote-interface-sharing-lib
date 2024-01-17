@@ -13,6 +13,7 @@ class FunctionType(Enum):
     InitMethod = 2
     DelOperator = 3
     NoneFunction = 0
+overloads = ("__str__",)
 
 if len(sys.argv) < 2:
     sys.exit()
@@ -53,7 +54,7 @@ for file, module_name in zip(files, modules):
 
             if end_of_class(l, class_indent):
                 if not init_implemented:
-                    gen.implement_default_init(class_name, tabs)
+                    gen.implement_default_init(class_name, " "*(class_indent+4))
 
                 class_name = ''
                 class_indent = 0
@@ -92,9 +93,15 @@ for file, module_name in zip(files, modules):
                 elif l.find('__del__(') != -1:
                     function_type = FunctionType.DelOperator
                     continue
-                elif l[p+3:].find('__') != -1:
-                    function_type = NoneFunction
-                    continue
+                elif (beg_of_name := l[p+3:].find('__')) != -1:
+                    beg_of_name += p+3
+                    end_of_name = beg_of_name + l[beg_of_name:].find('(')
+
+                    if l[beg_of_name:end_of_name] in overloads:
+                        function_type = FunctionType.RegularFunctionOrMethod
+                    else:
+                        function_type = FunctionType.NoneFunction
+                        continue
                 else:
                     function_type = FunctionType.RegularFunctionOrMethod
 
