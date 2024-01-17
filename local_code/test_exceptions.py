@@ -18,3 +18,11 @@ def test_zero_division():
         assert False
     else:
         assert False
+
+def test_exception_from_init():
+    try:
+        obj = NotConstructable()
+    except Exception as e:
+        assert str(e) == "Exception"
+    else:
+        assert False

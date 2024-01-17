@@ -22,3 +22,7 @@ def test_divide_numbers():
     a = divide_numbers(5,2)
     delta = 1e-4
     assert 2.5-delta < a and a < 2.5+delta
+
+def test_no_return():
+    r = no_return()
+    assert r is None

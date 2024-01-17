@@ -62,3 +62,35 @@ def test_deriverred_method():
     
     value = obj.return_five()
     assert value == 5
+
+def test_instances_no_for_derrivered_class():
+    obj = Inherited()
+
+    n = nc.get_num_of_objects()
+    assert n == 1
+
+def test_wrond_object():
+    not_local = Cloneable(5).clone()
+    
+    try:
+        not_local.get()
+    except ValueError:
+        assert True
+    else:
+        assert False
+
+def test_string_conversion():
+    obj = Printable()
+
+    assert str(obj) == "<class Printable object>"
+
+def test_getter():
+    obj = Structure()
+
+    assert obj.get_a() == 3
+
+def test_getter_setter():
+    obj = Structure()
+    obj.set_a(7)
+
+    assert obj.get_a() == 7
