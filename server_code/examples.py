@@ -22,6 +22,11 @@ def return_string():
 def return_none():
     return None
 
+def no_return():
+    pass
+
+def default_param(a=7, b=5):
+    return a,b
 
 class WithoutInit:
     def wait(self, sleep_time):
@@ -32,12 +37,16 @@ class WithoutInit:
 class NoParams:
     def __init__(self):
         print("initialization")
+        self.__text = "Private"
 
     def __del__(self):
         print("deleting")
     
     def return_five(self):
         return 5
+
+    def __get_str(self):
+        return self.__text
 
 
 class Params:
@@ -50,13 +59,33 @@ def divide_numbers(a,b):
 class Inherited(NoParams):
     pass
 
-# functions = [no_params_fun,\
-#             fun_with_params,\
-#             varriable_num_of_params,\
-#             return_multiple_values,\
-#             return_single_value,\
-#             return_string,\
-#             return_none,\
-#             NoParams.return_five,\
-#             WithoutInit.wait,
-#             divide_numbers]
+class NotConstructable:
+    def __init__(self):
+        raise Exception("Exception")
+
+class Printable:
+    def __str__(self):
+        return "<class Printable object>"
+
+class Cloneable:
+    def __init__(self, a):
+        self.a = a
+
+    def get(self):
+        return self.a
+
+    def clone(self):
+        return Cloneable(self.a)
+
+def get_value(obj):
+    return obj.get()
+
+class Structure:
+    def __init__(self):
+        self.a = 3
+    
+    def get_a(self):
+        return self.a
+
+    def set_a(self, a):
+        self.a = a
